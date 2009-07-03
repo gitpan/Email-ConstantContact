@@ -15,7 +15,7 @@ Email::ConstantContact::Activity - Internal class to interact with ConstantConta
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
@@ -26,7 +26,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 
 =head1 SYNOPSIS

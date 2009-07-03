@@ -18,7 +18,7 @@ Email::ConstantContact - Perl interface to the ConstantContact API
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
@@ -29,7 +29,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
