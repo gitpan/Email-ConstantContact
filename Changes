@@ -4,4 +4,7 @@ Revision history for Email-ConstantContact
         First version, released on an unsuspecting world.
 0.02	2009-07-02
 		Fixed package gzip permissions issue, added dependencies
+0.03	2009-07-04
+		Fixed bug causing errors to return "1"
+		Fixed documentation typos
 

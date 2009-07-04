@@ -18,7 +18,7 @@ Email::ConstantContact - Perl interface to the ConstantContact API
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
@@ -29,7 +29,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -86,7 +86,7 @@ ConstantContact username and password to interact with the service.
     # Manage List Membership
     $old_contact->removeFromList($some_list_id);
     $old_contact->clearAllLists();
-    $old_contact->removeFromList($new_list);
+    $old_contact->addToList($new_list);
     $old_contact->save();
 
     # Opt-Out of all future emails
@@ -149,6 +149,7 @@ sub getActivity {
 	}
 	else {
 		carp "Activity individual request returned code " . $res->status_line;
+		return wantarray? (): undef;
 	}
 }
 
@@ -177,6 +178,7 @@ sub activities {
 	}
 	else {
 		carp "Activities request returned code " . $res->status_line;
+		return wantarray? (): undef;
 	}
 }
 
@@ -221,6 +223,7 @@ sub lists {
 	}
 	else {
 		carp "Contact Lists request returned code " . $res->status_line;
+		return wantarray? (): undef;
 	}
 }
 
@@ -276,6 +279,7 @@ sub contacts {
 	}
 	else {
 		carp "Contacts request returned code " . $res->status_line;
+		return wantarray? (): undef;
 	}
 }
 
@@ -298,18 +302,24 @@ sub getContact {
 		$req1->authorization_basic($self->{apikey} . '%' . $self->{username}, $self->{password});
 		my $res1 = $ua->request($req1);
 
-		return undef unless ($res1->code == 200);
+		unless ($res1->code == 200) {
+			return wantarray? (): undef;
+		}
 
 		my $xs1 = XML::Simple->new(KeyAttr => [], SuppressEmpty => 'undef',
 			GroupTags => { ContactLists => 'ContactList' }, ForceArray => ['link','entry','ContactList']);
 		my $xmlobj1 = $xs1->XMLin($res1->content);
 
-		return undef unless (defined($xmlobj1->{'entry'}) && ref($xmlobj1->{'entry'}));
+		unless (defined($xmlobj1->{'entry'}) && ref($xmlobj1->{'entry'})) {
+			return wantarray? (): undef;
+		}
 
 		my $subobj1 = $xmlobj1->{'entry'}->[0];
 		my $contact1 = new Email::ConstantContact::Contact($self, $subobj1);
 
-		return undef unless ($contact1 && $contact1->{'id'});
+		unless ($contact1 && $contact1->{'id'}) {
+			return wantarray? (): undef;
+		}
 
 		$url = lc($contact1->{'id'});
 		$url =~ s/^http:/https:/;
@@ -333,6 +343,7 @@ sub getContact {
 	}
 	else {
 		carp "Contact individual request returned code " . $res->status_line;
+		return wantarray? (): undef;
 	}
 }
 
@@ -365,6 +376,7 @@ sub getList {
 	}
 	else {
 		carp "Contact List individual request returned code " . $res->status_line;
+		return wantarray? (): undef;
 	}
 }
 
@@ -394,6 +406,7 @@ sub resources {
 	}
 	else {
 		carp "Service Document request returned code " . $res->status_line;
+		return wantarray? (): undef;
 	}
 
 }

@@ -15,7 +15,7 @@ Email::ConstantContact::List - Internal class to interact with ConstantContact C
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
@@ -26,7 +26,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -175,7 +175,7 @@ sub create {
 	}
 	else {
 		carp "Contact List creation request returned code " . $res->status_line;
-		return undef;
+		return wantarray? (): undef;
 	}
 }
 
