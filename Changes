@@ -11,5 +11,7 @@ Revision history for Email-ConstantContact
 	Fixed bug during Contact List save.
 	Added code to handle multiple-page ContactList results.
 	Added ability to retrieve bounced address list.
+0.05	2011-01-10
+	Added ability to pull full Campaign details.
 
 

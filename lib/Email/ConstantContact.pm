@@ -19,7 +19,7 @@ Email::ConstantContact - Perl interface to the ConstantContact API
 
 =head1 VERSION
 
-Version 0.04
+Version 0.05
 
 =cut
 
@@ -30,7 +30,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
@@ -456,6 +456,40 @@ sub campaigns {
 	}
 	else {
 		carp "Campaigns request returned code " . $res->status_line;
+		return wantarray? (): undef;
+	}
+}
+
+sub getCampaign {
+	my $self = shift;
+	my $campaignname = shift;
+	my $url = '';
+
+	if ($campaignname =~ /^http/) {
+		#they passed in the actual REST link, so we can use it directly.
+		$url = lc($campaignname);
+		$url =~ s/^http:/https:/;
+	}
+	else {
+		#they passed in the list's ID string, we must construct the url.
+		$url = lc($self->{rooturl} . '/campaigns/' . $campaignname);
+	}
+
+	my $req = GET($url);
+	$req->authorization_basic($self->{apikey} . '%' . $self->{username}, $self->{password});
+
+	my $ua = new LWP::UserAgent;
+	my $res = $ua->request($req);
+
+	if ($res->code == 200) {
+		my $xs = XML::Simple->new(KeyAttr => [], SuppressEmpty => 'undef',
+			GroupTags => { Errors => 'Error' }, ForceArray => ['link','entry','Error']);
+		my $xmlobj = $xs->XMLin($res->content);
+
+		return new Email::ConstantContact::Campaign($self, $xmlobj);
+	}
+	else {
+		carp "Campaign individual request returned code " . $res->status_line;
 		return wantarray? (): undef;
 	}
 }
