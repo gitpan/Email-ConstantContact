@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Email-ConstantContact
-version:            0.03
+version:            0.04
 abstract:           Perl interface to the ConstantContact API
 author:
     - Adam Rich <arich@cpan.org>

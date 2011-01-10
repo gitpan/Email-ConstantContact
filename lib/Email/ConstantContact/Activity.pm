@@ -15,7 +15,7 @@ Email::ConstantContact::Activity - Internal class to interact with ConstantConta
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
@@ -26,7 +26,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 
 =head1 SYNOPSIS
@@ -136,7 +136,7 @@ L<http://search.cpan.org/dist/Email-ConstantContact/>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Adam Rich, all rights reserved.
+Copyright 2009-2011 Adam Rich, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

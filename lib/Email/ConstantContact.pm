@@ -8,6 +8,7 @@ use Email::ConstantContact::Resource;
 use Email::ConstantContact::List;
 use Email::ConstantContact::Contact;
 use Email::ConstantContact::Activity;
+use Email::ConstantContact::Campaign;
 use HTTP::Request::Common qw(POST GET);
 use URI::Escape;
 use XML::Simple;
@@ -18,7 +19,7 @@ Email::ConstantContact - Perl interface to the ConstantContact API
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
@@ -29,7 +30,7 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 SYNOPSIS
 
@@ -100,6 +101,16 @@ ConstantContact username and password to interact with the service.
         print "Found recent activity, Type= ", $activity->{Type}, 
             "Status= ", $activity->{Status}, "\n";
     }
+
+	# Obtain bounced email addresses.
+	foreach my $camp ($cc->campaigns('SENT')) {
+		foreach my $event ($camp->events('bounces')) {
+			if ($event->{Code} eq 'B') {
+				print "Bounced: ", $event->{Contact}->{EmailAddress}, "\n";
+			}
+		}
+	}
+
 
 =cut
 
@@ -202,29 +213,38 @@ sub newList {
 sub lists {
 	my $self = shift;
 
-	my $url = lc($self->{rooturl} . '/lists');
-	my $req = GET($url);
-	$req->authorization_basic($self->{apikey} . '%' . $self->{username}, $self->{password});
-
 	my $ua = new LWP::UserAgent;
-	my $res = $ua->request($req);
+	my @URLS = (lc($self->{rooturl} . '/lists'));
 	my @lists;
 
-	if ($res->code == 200) {
-		my $xs = XML::Simple->new(SuppressEmpty => 'undef', KeyAttr => [], ForceArray => ['link','entry']);
-		my $xmlobj = $xs->XMLin($res->content);
+	while (my $url = shift(@URLS)) {
+		my $req = GET($url);
+		$req->authorization_basic($self->{apikey} . '%' . $self->{username}, $self->{password});
+		my $res = $ua->request($req);
 
-		if (defined($xmlobj->{'entry'}) && ref($xmlobj->{'entry'})) {
-			foreach my $subobj (@{$xmlobj->{'entry'}}) {
-				push (@lists, new Email::ConstantContact::List($self, $subobj));
+		if ($res->code == 200) {
+			my $xs = XML::Simple->new(SuppressEmpty => 'undef', KeyAttr => [], ForceArray => ['link','entry']);
+			my $xmlobj = $xs->XMLin($res->content);
+
+			if (defined($xmlobj->{'entry'}) && ref($xmlobj->{'entry'})) {
+				foreach my $subobj (@{$xmlobj->{'entry'}}) {
+					push (@lists, new Email::ConstantContact::List($self, $subobj));
+				}
+				if (defined($xmlobj->{'link'}) && ref($xmlobj->{'link'})) {
+					foreach my $subobj (@{$xmlobj->{'link'}}) {
+						if ($subobj->{'rel'} && ($subobj->{'rel'} eq "next")) {
+							push (@URLS, $self->{cchome} . $subobj->{'href'});
+						}
+					}
+				}
 			}
 		}
-		return @lists;
+		else {
+			carp "Contact Lists request returned code " . $res->status_line;
+			return wantarray? (): undef;
+		}
 	}
-	else {
-		carp "Contact Lists request returned code " . $res->status_line;
-		return wantarray? (): undef;
-	}
+	return @lists;
 }
 
 sub newContact {
@@ -411,6 +431,35 @@ sub resources {
 
 }
 
+sub campaigns {
+	my $self = shift;
+	my $status = shift;
+
+	my $url = lc($self->{rooturl} . '/campaigns' . ($status ? ('?status=' . $status) : ''));
+	my $req = GET($url);
+	$req->authorization_basic($self->{apikey} . '%' . $self->{username}, $self->{password});
+
+	my $ua = new LWP::UserAgent;
+	my $res = $ua->request($req);
+	my @lists;
+
+	if ($res->code == 200) {
+		my $xs = XML::Simple->new(SuppressEmpty => 'undef', KeyAttr => [], ForceArray => ['link','entry']);
+		my $xmlobj = $xs->XMLin($res->content);
+
+		if (defined($xmlobj->{'entry'}) && ref($xmlobj->{'entry'})) {
+			foreach my $subobj (@{$xmlobj->{'entry'}}) {
+				push (@lists, new Email::ConstantContact::Campaign($self, $subobj));
+			}
+		}
+		return @lists;
+	}
+	else {
+		carp "Campaigns request returned code " . $res->status_line;
+		return wantarray? (): undef;
+	}
+}
+
 =head1 TODO
 
 =over 4
@@ -472,7 +521,7 @@ L<http://search.cpan.org/dist/Email-ConstantContact/>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Adam Rich, all rights reserved.
+Copyright 2009-2011 Adam Rich, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.

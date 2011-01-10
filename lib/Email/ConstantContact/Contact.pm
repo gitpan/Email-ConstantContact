@@ -15,7 +15,7 @@ Email::ConstantContact::Contact - Internal class to interact with ConstantContac
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
@@ -26,25 +26,12 @@ require Exporter;
 @ISA = qw(Exporter);
 @EXPORT = qw( );
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 =head1 SYNOPSIS
 
 This module is not typically used directly, but internally by the main
 Email::ConstantContact object for processing requests.
-
-    use Email::ConstantContact;
-
-	my $apikey = 'ABCDEFG1234567';
-    my $username = 'mycompany';
-	my $password = 'topsecret';
-
-    my $cc = new Email::ConstantContact($apikey, $username, $password);
-    my @recent_activities = $cc->activities();
-
-    foreach my $activity (@recent_activities) {
-        print "Found recent activity, Type= ", $activity->{Type}, "\n";
-	}
 
 =cut
 
@@ -183,7 +170,7 @@ sub save {
 	$writer->end();
 
 	my $ua = new LWP::UserAgent;
-	my $url = lc($self->{id});
+	my $url = lc($self->{'id'});
 	$url =~ s/^http:/https:/;
 
 	my $req = new HTTP::Request('PUT', $url);
@@ -307,7 +294,7 @@ L<http://search.cpan.org/dist/Email-ConstantContact/>
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Adam Rich, all rights reserved.
+Copyright 2009-2011 Adam Rich, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
